@@ -5,7 +5,7 @@ export const getPatient=async(req,res)=>{
         const patients =await Patient.find({});
         res.status(200).json({sucess:true, data:patients});
     }catch(error){
-        console.log("error in fetching the users",error.message);
+        console.error("error in fetching the users",error.message);
         res.status(500).json({sucess:false,message:"Server Error"});    
     }
 };
