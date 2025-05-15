@@ -16,7 +16,7 @@ app.use("/api/doctor",DoctorRoutes);
 
 app.use("/api/patient",PatientRoutes);
 
-app.listen(4848, () => {
+app.listen(PORT, () => {
     connectDB();   
     console.log("Server started at "+ PORT);    
 });
