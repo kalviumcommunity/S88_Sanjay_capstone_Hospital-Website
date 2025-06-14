@@ -3,7 +3,7 @@ import Doctor from '../models/Doctor.model.js'
 export const getDoctor=async(req,res)=>{
     try{
         const doctors =await Doctor.find({});
-        res.status(200).json({sucess:true, data:doctors});  
+        res.status(200).json({success:true, data:doctors});  
     }catch(error){
         console.error("error in fetching the users",error.message);
         res.status(500).json({sucess:false,message:"Server Error"});    
