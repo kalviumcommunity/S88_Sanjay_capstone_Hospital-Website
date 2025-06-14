@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import backgroundImage from '../assets/Screenshot 2025-04-10 102139.png';
-import NavBar from "../Components/Navbar";
 import { NavLink } from "react-router-dom";
 import Logo from '../assets/Keithston.png';
 import Logo1 from '../assets/Screenshot 2025-04-11 102905.png';
@@ -27,7 +26,7 @@ const PatientsLogin=()=>{
 
   return (
     <div className="min-h-screen bg-cover bg-center text-[#1a1a1a] scroll-smooth"style={{ backgroundImage: `url(${backgroundImage})` }}>
-      <NavBar />
+
       <div className="flex items-center justify-center min-h-screen bg-black bg-opacity-40">
         <div className="bg-white p-8 rounded-lg shadow-lg w-[22rem]">
           {/* Icon */}

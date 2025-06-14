@@ -28,7 +28,7 @@ const doctorSchema = new mongoose.Schema(
       },
       bloodgroup:{
         type:String,
-        required:true,
+        required:true,  
       }
     },
     {
