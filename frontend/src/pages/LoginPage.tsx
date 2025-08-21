@@ -7,6 +7,8 @@ const Login = () => {
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSignup, setIsSignup] = useState(false);
 
   const roles = [
     {
@@ -33,25 +35,61 @@ const Login = () => {
     setSelectedRole(roleId);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt:', { role: selectedRole, username, password });
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, role: selectedRole }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      alert('Login successful!');
+      // Store token or redirect here
+    } catch (err: any) {
+      alert(`Login failed: ${err.message}`);
+    }
   };
 
-  const handleGoogleLogin=async()=>{
-    try{
-      const result=await signInWithPopup(auth,googleProvider);
-      const user=result.user;
-      console.log('Google login successfull',user);
-    }catch(error){
-      console.error("Google Login error",error);
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      alert('Passwords do not match!');
+      return;
     }
-  }
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, role: selectedRole }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      alert('Signup successful! You can now log in.');
+      setIsSignup(false);
+      setConfirmPassword('');
+    } catch (err: any) {
+      alert(`Signup failed: ${err.message}`);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      console.log('Google login successful:', user);
+      // Optionally: send user info to backend
+    } catch (error) {
+      console.error('Google Login error', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
-        {/* Hospital Logo */}
+        {/* Logo */}
         <div className="text-center">
           <div className="bg-blue-600 p-4 rounded-xl inline-block mb-4">
             <Stethoscope className="h-12 w-12 text-white" />
@@ -61,7 +99,7 @@ const Login = () => {
         </div>
 
         {!selectedRole ? (
-          /* Role Selection */
+          // Role selection
           <div className="bg-white rounded-lg border shadow-sm">
             <div className="p-6 text-center">
               <h3 className="text-xl font-semibold">Login as</h3>
@@ -81,19 +119,19 @@ const Login = () => {
             </div>
           </div>
         ) : (
-          /* Login Form */
+          // Login / Signup Form
           <div className="bg-white rounded-lg border shadow-sm">
             <div className="p-6 text-center">
               <div className="flex items-center justify-center space-x-2 mb-2">
                 {(() => {
-                  const role = roles.find(r => r.id === selectedRole);
+                  const role = roles.find((r) => r.id === selectedRole);
                   if (role) {
                     const IconComponent = role.icon;
                     return (
                       <>
                         <IconComponent className="h-6 w-6 text-blue-600" />
                         <h3 className="text-xl font-semibold">
-                          Login as {role.name}
+                          {isSignup ? 'Sign up as' : 'Login as'} {role.name}
                         </h3>
                       </>
                     );
@@ -109,13 +147,15 @@ const Login = () => {
               </button>
             </div>
             <div className="p-6 pt-0">
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="username" className="block text-sm font-medium">Username</label>
+                  <label htmlFor="username" className="block text-sm font-medium">
+                    Username
+                  </label>
                   <input
                     id="username"
                     type="text"
-                    placeholder="Enter your userName"
+                    placeholder={isSignup ? 'Create a username' : 'Enter your username'}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
@@ -123,35 +163,73 @@ const Login = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="password" className="block text-sm font-medium">Password</label>
+                  <label htmlFor="password" className="block text-sm font-medium">
+                    Password
+                  </label>
                   <input
                     id="password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder={isSignup ? 'Create a password' : 'Enter your password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                <div className="p-6 pt-0">
-                  <form onSubmit={handleLogin} className="space-y-4"> 
-                    
-                  </form>
-                  <div className="mt-4">
-                    <button type="button" onClick={handleGoogleLogin} className="w-full h-10 px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center space-x-2 hover:bg-gray-100 transition-colors">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"className="h-5 w-5"/>
-      <span>Continue with Google</span>
-    </button>
-  </div>
-</div>
-                <button 
-                  type="submit" 
+
+                {isSignup && (
+                  <div className="space-y-2">
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium">
+                      Confirm Password
+                    </label>
+                    <input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Re-enter your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                )}
+
+                <button
+                  type="submit"
                   className="w-full h-10 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
                 >
-                  Login
+                  {isSignup ? 'Sign Up' : 'Login'}
                 </button>
               </form>
+
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  className="w-full h-10 px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center space-x-2 hover:bg-gray-100 transition-colors"
+                >
+                  <img
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="Google"
+                    className="h-5 w-5"
+                  />
+                  <span>{isSignup ? 'Sign up with Google' : 'Continue with Google'}</span>
+                </button>
+              </div>
+
+              <p className="text-sm text-center text-gray-500 mt-4">
+                {isSignup ? 'Already have an account?' : "Don't have an account?"}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignup(!isSignup);
+                    setConfirmPassword('');
+                  }}
+                  className="ml-1 text-blue-600 hover:underline"
+                >
+                  {isSignup ? 'Login' : 'Sign Up'}
+                </button>
+              </p>
             </div>
           </div>
         )}
